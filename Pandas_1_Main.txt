@@ -1,0 +1,73 @@
+import pandas as pd
+import numpy as np
+from Pandas_Age_Walk_Function_Class import Pandas_Age_Walk_Func
+
+df = pd.read_csv('E:/Data/Books/Programming/Rough Set Theory/Datasets_CSVs/Age_LEMS.csv', index_col=0)
+print(df)
+print()
+
+index = df.index
+columns = df.columns
+values = df.values
+num_col = df.shape[1]
+num_row = df.shape[0]
+# print(index)
+# print()
+# print(columns)
+# print()
+# print(values)
+# print()
+
+# df['Fit'] = df['Walk'].apply(lambda x: x == 'Yes')
+# print(df)
+
+
+# col_items = df.Age.unique() # numpy library function
+# col_items.append(len(col_items))   # doesn't work since it returns a numpy array
+# dict_col = {col_items}
+
+# for i in range(1, df.shape[1]):
+#    print(columns[i])
+
+# for i in range(1, df.shape[1]):   direction function unique() exists
+#    obj_item = Pandas_Age_Walk_Func(values, i)
+#    dict_col[i] = obj_item.get_col_items()    # default keys provided - 1,2,...
+# print(sorted(set(df.Age.unique())))   # converts numpy unique() array to set; set stores every value only once
+
+
+# obj_item_1 = Pandas_Age_Walk_Func(df)
+# obj_item_1.col_item_compare()
+
+# for i in range(0, num_col):
+#     for j in range(0, num_row):
+#         print(df.iloc[j, i])
+
+
+obj_item = Pandas_Age_Walk_Func(df)
+dict_col = obj_item.col_item_split()
+print(dict_col)
+
+#for i in range(0, num_row):
+#    print(values[i, 0:num_col-1])
+#    val_temp = values[i, 0:num_col-1]
+#    for j in range(0, num_row):
+#        if j == i:
+#            continue
+#        else:
+#            if val_temp == values[j, 0: num_col-1]:
+
+list_col = []
+list_all = []
+
+for val_key in dict_col.values():
+    list_col = []
+    print(val_key)
+    print()
+    for val in val_key.values():
+        list_col.append(val)
+        print(val)
+        print()
+    list_all.append(list_col)
+
+print(list_all)
+        

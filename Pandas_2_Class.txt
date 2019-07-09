@@ -1,0 +1,72 @@
+import pandas as pd
+
+class Pandas_Age_Walk_Func:
+
+    global dict_combo, dict_col_all, list_keys, dict_col, col_items, index, columns, values, num_rows, num_cols
+    col_items = []
+    list_keys = []
+    dict_keys = {}
+    dict_col_all = {}
+
+    def __init__(self, data): # two underscores on either side of __init__
+        self.data = data
+
+
+#    def get_col_items_nump(self):
+#        items = []
+#        ctr = 0
+
+#       for value in self.values:
+#            if value[self.x] not in items:
+#                items.append(value[self.x])
+#                ctr += 1
+#        dict_combo = {'item': items, 'count': ctr}
+#        items = []
+#        ctr = 0
+#        return dict_combo
+
+    def col_item_split(self):
+
+        columns = self.data.columns
+        num_rows = self.data.shape[0]
+
+        for column in columns:
+            dict_keys = {}
+            col_items = []
+            col_items = sorted(list(set(self.data[column].unique())))
+            # print(col_items)
+            # print()
+            ser = pd.Series(self.data[column])
+            # print(ser)
+            # print()
+            for i in range(0, len(col_items)):
+                list_keys = []
+                for j in range(0, num_rows):
+                    if ser[j] == col_items[i]:
+                        # print(ser[j] + ', ' + col_items[i])
+                        list_keys.append((j + 1))
+                        # print(list_keys)
+                dict_keys[col_items[i]] = set(list_keys)
+            # print(dict_keys)
+            # print()
+            dict_col_all[column] = dict_keys
+            # print(dict_col_all)
+            # print()
+
+        return dict_col_all
+
+
+
+
+
+
+# set_age = []
+# ctr_age = 0
+# for value in values:
+#     if value[1] not in set_age:
+#         set_age.append(value[1])
+#         ctr_age += 1
+#
+#
+# print(set_age)
+# print(ctr_age)
