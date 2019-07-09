@@ -1,0 +1,254 @@
+import pandas as pd
+from itertools import combinations
+
+
+class PandasAgeWalkFunc:
+
+    global dict_combo, dict_col_all, list_keys, dict_col, col_items, index, columns, values, num_rows, num_cols, dict_boundary, dict_outside, col_combi, list_col, dict_lenwise
+    col_items = []
+    list_keys = []
+    col_combi = []
+    list_col = []
+    dict_keys = {}
+    dict_col_all = {}
+    dict_boundary = {}
+    dict_outside = {}
+    dict_lenwise = {}
+
+    def __init__(self, data): # two underscores on either side of __init__
+        self.data = data
+
+    def col_item_split(self):
+
+        columns = self.data.columns
+        num_rows = self.data.shape[0]
+
+        for column in columns:
+            dict_keys = {}
+            col_items = []
+            col_items = sorted(list(set(self.data[column].unique())))
+            # print(col_items)
+            # print()
+            ser = pd.Series(self.data[column])
+            # print(ser)
+            # print()
+            for i in range(0, len(col_items)):
+                list_keys = []
+                for j in range(0, num_rows):
+                    if ser[j] == col_items[i]:
+                        # print(ser[j] + ', ' + col_items[i])
+                        list_keys.append((j + 1))
+                        # print(list_keys)
+                dict_keys[col_items[i]] = set(list_keys)
+            # print(dict_keys)
+            # print()
+            dict_col_all[column] = dict_keys
+            # print(dict_col_all)
+            # print()
+
+        return dict_col_all
+
+    def elem_list(self, dict_col_all):
+
+        list_col = []
+        list_all = []
+        dict_elem = {}
+        dict_combi = {}
+        columns = self.data.columns
+
+        for key, value in dict_col_all.items():
+            list_col = []
+            print(value)
+            print()
+            for val in value.values():
+                list_col.append(val)
+                # print(val)
+                # print()
+            list_all.append(list_col)
+            dict_elem[key] = list_col
+
+        dict_combi['Elem Dict'] = dict_elem
+        dict_combi['Elem List'] = list_all
+        return dict_combi
+
+    def low_approx(self, dec_value, dict_col_all, ele_list):   # lower approximation calculation
+
+        dict_low_approx = {}
+        columns = self.data.columns
+        num_cols = self.data.shape[1]
+        i = 0
+        ctr = 0  # used to check null set condition
+        flag = False  # used to check null set condition
+
+        # dec_value = input("Enter decision attribute value to be calculated: ")
+        test = dict_col_all[columns[num_cols - 1]]  # stores either of the values of the decision value to be tested
+        sup_set = test[dec_value]  # contains cardinal nos. set of decision value
+
+        low_apr = set()
+
+        print("Lower Approximations are given below: ")
+        for elem in ele_list:  # iterate through each column
+            for se in elem:  # iterate through unique cardinal nos.
+                if se.issubset(sup_set):  # checking lower approximation condition
+                    flag = True
+                    ctr += 1
+                    if flag:
+                        low_apr.update(se)
+                        flag = False
+            # print(str(low_apr))
+            dict_low_approx[columns[i]] = set(list(low_apr))
+            if not flag and ctr == 0:  # to check and return for null_set condition
+                dict_low_approx[columns[i]] = {}
+
+            low_apr.clear()
+            low_apr = set()
+            i += 1
+
+        return dict_low_approx
+
+    def upp_approx(self, dec_value, dict_col_all, ele_list):   # upper approximations calculation
+
+        dict_upp_approx = {}
+        columns = self.data.columns
+        num_cols = self.data.shape[1]
+        i = 0
+
+        # dec_value = input("Enter decision attribute value to be calculated: ")
+        test = dict_col_all[columns[num_cols - 1]]  # stores either of the values of the decision value to be tested
+        sup_set = test[dec_value]  # contains cardinal nos. set of decision value
+
+        upp_apr = sup_set.copy()
+
+        print("Upper Approximations are given below: ")
+        for elem in ele_list:  # iterate through each column
+            for se in elem:  # iterate through unique cardinal nos.
+                if not se.isdisjoint(sup_set):
+                    upp_apr.update(se)
+            # print(str(upp_apr))
+            dict_upp_approx[columns[i]] = set(list(upp_apr))
+            upp_apr.clear()
+            upp_apr = sup_set.copy()
+            i += 1
+
+        return dict_upp_approx
+
+    def get_accu(self, dict_la, dict_ua):
+
+        dict_accuracy = {}
+        n_la = 0
+        n_ua = 0
+        acc = 0.0
+
+        for key in dict_la.keys():  # length of either dict_la or dict_ua; both are equal
+            n_la = len(dict_la[key])
+            n_ua = len(dict_ua[key])
+            acc = n_la/n_ua
+            # print(key + " : " + str(n_la) + " / " + str(n_ua) + " = " + str(acc))
+            dict_accuracy[key] = acc
+
+        return dict_accuracy
+
+    def get_boundary(self, dict_la, dict_ua):
+
+        for key in dict_la.keys():
+            dict_boundary[key] = dict_ua[key].difference(dict_la[key])
+
+        return dict_boundary
+
+    def get_outside_region(self, elem_set, dict_ua):
+
+        temp_set =set()
+        for key in dict_ua.keys():
+            temp_set = elem_set.difference(dict_ua[key])
+            if temp_set == set():
+                dict_outside[key] = {}
+            else:
+                dict_outside[key] = temp_set
+
+        return dict_outside
+
+    def column_combinations(self, elem_dict):
+
+        dict_intersect = {}
+        list_intersect = []
+        temp_list = []
+        list_swap = []
+        columns = self.data.columns
+        for column in columns:
+            list_col.append(column)
+        list_col.pop()
+
+        for len in range(2, self.data.shape[1]):  # for different combination lengths; taking 'len' columns at a time
+            col_combi = combinations(list_col, len)
+            # print(list(col_combi))
+            # print(len)
+            # print()
+            for combo in list(col_combi):   # for each combination of columns
+                # print(combo)
+                # print()
+                temp_list = []
+                list_swap = elem_dict[combo[0]]
+                for elem in range(1, len):  # for each column in a combination tuple
+                    # print(elem)
+                    # for se in elem_dict[combo[elem]]:   # for each set in a column's elementary list
+                    #    temp_list.append(se)
+                    #    print(se)
+                    #    print(temp_list)
+                    #    print(elem_dict[combo[elem]])
+                    #    print()
+                    temp_list = elem_dict[combo[elem]]
+                    # print(str(combo[elem]) + ": " + str(temp_list))
+
+                    # print(temp_list)
+                    # print()
+                    for se in list_swap:
+                        # temp_set = se.intersection(*temp_list)
+                        # temp_set = se
+                        # print(temp_set)
+                        # print()
+                        for s in temp_list:
+                            # print(s)
+                            temp_set = se
+                            # print(temp_set)
+                            # temp_set &= s
+                            # print(temp_set)
+                            if temp_set & s != set():
+                                list_intersect.append(temp_set & s)
+                        # print(list_intersect)
+                        # print()
+                    # list_swap = list_intersect
+                dict_intersect[combo] = list_intersect
+                # print(dict_intersect)
+                list_intersect = []
+
+            dict_lenwise[len] = dict_intersect
+            # print(dict_intersect)
+            dict_intersect = {}
+
+        return dict_lenwise
+
+
+
+
+# set_age = []
+# ctr_age = 0
+# for value in values:
+#     if value[1] not in set_age:
+#         set_age.append(value[1])
+#         ctr_age += 1
+#
+#
+# print(set_age)
+# print(ctr_age)
+#    def get_col_items_nump(self):
+#        items = []
+#        ctr = 0
+
+#       for value in self.values:
+#            if value[self.x] not in items:
+#                items.append(value[self.x])
+#                ctr += 1
+#        dict_combo = {'item': items, 'count': ctr}
+#        items = []
+#        ctr = 0
+#        return dict_combo

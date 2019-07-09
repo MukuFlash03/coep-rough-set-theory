@@ -1,0 +1,158 @@
+import pandas as pd
+import numpy as np
+from Pandas_Age_Walk_Function_Class import PandasAgeWalkFunc
+
+
+# accepting file_path
+flag = False
+while not flag:
+    file_path = input("Please enter the complete correct file path of the dataset: \n")
+    ch = (input("Press 'Y' to confirm \nPress 'N' to enter file path again \n")).upper()
+    if ch == 'Y':
+        flag = True
+    elif ch == 'N':
+        flag = False
+
+df = pd.read_csv(file_path, index_col=0)
+print(df)
+print()
+
+ind = df.index
+columns = df.columns
+values = df.values
+num_col = df.shape[1]
+num_row = df.shape[0]
+
+obj_elem_set = set()
+for i in range(1, df.shape[0]+1):
+    obj_elem_set.add(i)
+print(obj_elem_set)
+
+# storage variables used
+dict_col = {}   # stores cardinal nos. of element values column-wise as well as unique data-wise
+elemen_list = []
+cris_list = []
+dict_low = {}
+dict_upp = {}
+dict_accu = {}
+dict_boun = {}
+dict_out = {}
+elem_dict = {}
+elemen_dict = {}
+dict_indiscern = {}
+
+# PandasAgeWalkFunc class object created
+obj_item = PandasAgeWalkFunc(df)
+
+# obtain complete cardinal position dictionary
+dict_col = obj_item.col_item_split()
+print(dict_col)
+
+# obtain elementary set and crisp set
+elem_dict = obj_item.elem_list(dict_col)
+elemen_list = elem_dict['Elem List']
+cris_list = elemen_list.pop()
+elemen_dict = elem_dict['Elem Dict']
+rem_key = columns[-1]
+temp = elemen_dict.pop(rem_key)
+print("Elementary List: " + str(elemen_list) + "\n")
+print("Crisp List: " + str(cris_list) + "\n")
+print("Elementary Dictionary: " + str(elemen_dict) + "\n")
+
+# obtain lower and upper approximations
+dec_val = input("Enter decision attribute value to be calculated: ")
+dict_low = obj_item.low_approx(dec_val, dict_col, elemen_list)
+print(str(dict_low) + "\n")
+dict_upp = obj_item.upp_approx(dec_val, dict_col, elemen_list)
+print(str(dict_upp) + "\n")
+
+# obtain accuracy parameter using accuracy = nLa/nUa
+dict_accu = obj_item.get_accu(dict_low, dict_upp)
+print("Accuracy of the parameters for the chosen decision attribute is given below: ")
+print(str(dict_accu) + "\n")
+
+dict_boun = obj_item.get_boundary(dict_low, dict_upp)
+print("Boundary region is: Upper Approx. - Lower Approx. = ")
+print(str(dict_boun) + "\n")
+
+
+dict_out = obj_item.get_outside_region(obj_elem_set, dict_upp)
+print("Outside region is: Universal Set - Upper Approx: ")
+print(str(dict_out) + "\n")
+
+dict_indiscern = obj_item.column_combinations(elemen_dict)
+print("List of all indiscernible combinations is as follows: ")
+print(str(dict_indiscern) + "\n")
+
+
+# print(ind)
+# print()
+# print(columns)
+# print()
+# print(values)
+# print()
+
+# df['Fit'] = df['Walk'].apply(lambda x: x == 'Yes')
+# print(df)
+
+
+# col_items = df.Age.unique() # numpy library function
+# col_items.append(len(col_items))   # doesn't work since it returns a numpy array
+# dict_col = {col_items}
+
+# for i in range(1, df.shape[1]):
+#    print(columns[i])
+
+# for i in range(1, df.shape[1]):   direction function unique() exists
+#    obj_item = Pandas_Age_Walk_Func(values, i)
+#    dict_col[i] = obj_item.get_col_items()    # default keys provided - 1,2,...
+# print(sorted(set(df.Age.unique())))   # converts numpy unique() array to set; set stores every value only once
+
+
+# obj_item_1 = Pandas_Age_Walk_Func(df)
+# obj_item_1.col_item_compare()
+
+# for i in range(0, num_col):
+#     for j in range(0, num_row):
+#         print(df.iloc[j, i])
+
+# lower and upper approximations calculations
+# dec_value = input("Enter decision attribute value to be calculated: ")
+# test = dict_col[columns[num_col - 1]]   # stores either of the values of the decision value to be tested
+# sup_set = test[dec_value]   # contains cardinal nos. set of decision value
+
+# lower approximation calculation
+# i = 0
+# ctr = 0     # used to check null set condition
+# flag = False    # used to check null set condition
+
+# print("Lower Approximations are given below: ")
+# for elem in elemen_list:    # iterate through each column
+#    for se in elem:         # iterate through unique cardinal nos.
+#        if se.issubset(sup_set):    # checking lower approximation condition
+#            flag = True
+#            ctr += 1
+#            if flag:
+#                print(columns[i] + ": " + ": " + str(se))
+#                flag = False
+#    if not flag and ctr == 0:   # to check and return for null_set condition
+#        print(columns[i] + ": " + ": {}")
+#
+#    i += 1
+# print()
+# print()
+
+# upper approximation calculation
+
+# upp_apr = sup_set.copy()
+# i = 0
+
+# print("Upper Approximations are given below: ")
+# for elem in elemen_list:    # iterate through each column
+#    for se in elem:         # iterate through unique cardinal nos.
+#        if not se.isdisjoint(sup_set):
+#            upp_apr.update(se)
+#    print(columns[i] + ": " + ": " + str(upp_apr))
+#    upp_apr.clear()
+#    upp_apr = sup_set.copy()
+#    i += 1
