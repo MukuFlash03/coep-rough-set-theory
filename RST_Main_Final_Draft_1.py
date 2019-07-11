@@ -9,14 +9,23 @@ import time
 from datetime import datetime
 import openpyxl
 
-file = 'C:/Users/MUKUL/Desktop/RST_Excel_3.xlsx'
+base_name = "RSTlog"
+now = datetime.now()    # current date and time
+suffix = now.strftime("%d-%m-%Y_%H-%M-%S")
+file_name = "_".join([base_name, suffix]) + ".xlsx"
 wb = openpyxl.Workbook()   # Workbook() creates a new excel file
 ws = wb.active  # fetches the currently active worksheet
-headings = ['Timestamp', 'Decision Value', 'Accuracy', 'Stability Index']
+headings = ['Timestamp', 'Decision Value', 'n(LA)',  'n(UA)', 'Accuracy', 'Stability Index']
+ws.column_dimensions['A'].width = 24
+ws.column_dimensions['B'].width = 24
+ws.column_dimensions['C'].width = 24
+ws.column_dimensions['D'].width = 24
+ws.column_dimensions['E'].width = 24
+ws.column_dimensions['F'].width = 24
 row = 1
 for col, entry in enumerate(headings, start=1): # filling in the headings
         ws.cell(row=row, column=col, value=entry)
-        wb.save(file)
+        wb.save(file_name)
 
 
 # accepting file_path
@@ -35,7 +44,7 @@ ax1 = fig.add_subplot(1,1,1)
 try:
     def animate(i):
 
-        global row
+        global row, file_name
     
         # df = pd.read_csv(file_path, index_col=0, delimiter = ' ')    # reading csv file data as a data frame variable
         df = pd.read_csv(file_path)    # reading csv file data as a data frame variable
@@ -72,6 +81,8 @@ try:
         elem_dict = {}  # stores elementary list and dict numbers of conditional attributes
         elemen_dict = {}    # stores elementary dict numbers of conditional attributes
         dict_indiscern_2 = {}   # stores elementary list for double conditional attributes
+        dict_nla = {}   # stores cardinal no. of Lower Approximation set
+        dict_nua = {}   # stores cardinal no. of Upper Approximation set
     
         for column in columns:  # stores names of columns
             list_col.append(column)
@@ -124,6 +135,9 @@ try:
             dict_upp = obj_item.upp_approx(dec_val, dict_col, elem_list, list_combi)    # obtain upper approximation
             # print("Lower Approximation: " + str(dict_low) + "\n")
             # print("Upper Approximation: " + str(dict_upp) + "\n")
+            for key in dict_low.keys():  # length of either dict_low or dict_upp; both are equal to no. of CAs taken at a time
+                dict_nla[dec_val] = len(dict_low[key])    # no. of elements in la
+                dict_nua[dec_val] = len(dict_upp[key])    # no. of elements in ua
             dict_accu[dec_val] = obj_item.get_accu(dict_low, dict_upp)  # obtain accuracy parameter using accuracy = nLa/nUa
             dict_SI[dec_val] = obj_item.get_SI(dict_low, dict_upp, len(obj_elem_set))  # obtain stability index(SI) parameter using SI = (n_la + n_ua + 1)/(n + 1) - 0.5
             dict_boun[dec_val] = obj_item.get_boundary(dict_low, dict_upp)  # get boundary region
@@ -139,8 +153,7 @@ try:
         # print(str(dict_out) + "\n")
     
         new_row = []
-        file = 'C:/Users/MUKUL/Desktop/RST_Excel_3.xlsx'
-        wb = openpyxl.load_workbook(filename=file)
+        wb = openpyxl.load_workbook(filename=file_name)
         ws = wb.active
     
         for i in range(0, len_dec):
@@ -150,10 +163,10 @@ try:
             print()
             dec_val = dec_items[i]
             row = row + 1
-            new_row = [date_time, dec_val, dict_accu[dec_val], dict_SI[dec_val]]
+            new_row = [date_time, dec_val, dict_nla[dec_val], dict_nua[dec_val], dict_accu[dec_val], dict_SI[dec_val]]
             for col, entry in enumerate(new_row, start=1):
                 ws.cell(row=row, column=col, value=entry)
-                wb.save(file)
+                wb.save(file_name)
             
     ani = FuncAnimation(fig, animate, interval=5000)
     plt.show()
